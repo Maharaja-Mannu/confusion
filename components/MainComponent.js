@@ -6,8 +6,27 @@ import Dishdetail from './DishdetailComponent'
 import { View, Text, Image, StyleSheet, ScrollView } from 'react-native'
 import { createStackNavigator, createDrawerNavigator, DrawerItems, SafeAreaView } from 'react-navigation'
 import About from './AboutComponent'
+import Reservation from './ReservationComponent'
 import {Icon} from 'react-native-elements'
+import { connect } from 'react-redux'
+import { fetchDishes, fetchComments, fetchPromos, fetchLeaders } from '../redux/ActionCreaters'
 
+const mapStateToProps = state => {
+    return {
+        dishes: state.dishes,
+        comments: state.comments,
+        promotions: state.promotions,
+        leaders: state.leaders
+    }
+}
+
+const mapDispatchToProps = dispatch => ({
+    fetchDishes: () => dispatch(fetchDishes()),
+    fetchComments: () => dispatch(fetchComments()),
+    fetchPromos: () => dispatch(fetchPromos()),
+    fetchLeaders: () => dispatch(fetchLeaders()),
+
+})
 
 const MenuNavigator = createStackNavigator({
     Menu: { screen: Menu,
@@ -88,6 +107,23 @@ const ContactNavigator = createStackNavigator({
     })
 })
 
+const ReservationNavigator = createStackNavigator({
+    Reservation: { screen: Reservation }
+}, {
+    navigationOptions: ({ navigation }) => ({
+        headerStyle: {
+            backgroundColor: '#512dab',
+            paddingHorizontal: 16
+        },
+        headerTitleStyle: {
+            color: '#fff'
+        },
+        headerLeft: <Icon name="menu" size={30} color='white'
+            onPress={() => navigation.toggleDrawer()}
+        />
+    })
+})
+
 const CustomDrawerContentComponent = (props) => (
     <ScrollView>
         <SafeAreaView style={StyleSheet.container} forceInset={{ top: 'always', horizontal: 'never' }}>
@@ -155,7 +191,7 @@ const MainNavigator = createDrawerNavigator({
         navigationOptions: {
             title: 'Contact Us',
             drawerLabel: 'Contact Us',
-            drawerIcon: ({ tintColor }) => (
+            drawerIcon: ({tintColor}) => (
                 <Icon
                     name='address-card'
                     type='font-awesome'
@@ -164,14 +200,47 @@ const MainNavigator = createDrawerNavigator({
                 />
             )
         }
+    },
+    Reservation: {
+        screen: ReservationNavigator,
+        navigationOptions: {
+            title: 'Reserve Table',
+            drawerLabel: 'Reserve Table',
+            drawerIcon: ({ tintColor }) => (
+                <Icon
+                    name='cutlery'
+                    type='font-awesome'
+                    size={24}
+                    color={tintColor}
+                />
+            )
+        }
     }
 
 },{
-    drawerBackgroundColor: 'rgba(255,255,255,0.9)',
-    contentComponent: CustomDrawerContentComponent
+    drawerBackgroundColor: '#512dab',
+    contentComponent: CustomDrawerContentComponent,
+    contentOptions: {
+        labelStyle: {
+            color: '#ccc'
+        },
+        activeBackgroundColor: '#5f2eaf',
+        activeTintColor: '#fff',
+        inactiveTintColor: '#fff',
+        activeLabelStyle: {
+            color: '#fff'
+        }
+    }
 })
 
 class Main extends Component {
+
+    componentDidMount() {
+        this.props.fetchDishes();
+        this.props.fetchComments();
+        this.props.fetchPromos();
+        this.props.fetchLeaders();
+    }
     render() {
         return(
             <View style={{flex: 1 }}>
@@ -207,5 +276,5 @@ const styles = StyleSheet.create({
     }
 })
 
-export default Main
+export default connect(mapStateToProps, mapDispatchToProps)(Main)
 //paddingTop: Platform.OS === 'ios' ? 0 : Constants.statusBarHeight
